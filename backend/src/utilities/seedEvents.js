@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { Event } from '../models/event.model.js';
+import {DB_NAME} from "../../constants.js";
 
 dotenv.config({ path: './.env' });
 
@@ -12,7 +13,7 @@ const seedEvents = async () => {
       );
     }
 
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL + DB_NAME);
     await Event.deleteMany({});
 
     const generateLayout = () => {
