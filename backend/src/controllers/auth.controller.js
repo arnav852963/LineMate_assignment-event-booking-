@@ -3,6 +3,13 @@ import { asyncHandler } from '../utilities/asyncHandler.js';
 import { ApiError } from '../utilities/ApiError.js';
 import { ApiResponse } from '../utilities/ApiResponse.js';
 import { verifyGoogleToken } from '../utilities/googleAuth.js';
+import {
+  registerBodySchema,
+  loginBodySchema,
+  googleLoginBodySchema,
+  authResponseSchema,
+} from '../zod/auth.zod.js';
+import { userResponseSchema } from '../zod/user.zod.js';
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -23,11 +30,12 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const register = asyncHandler(async (req, res) => {
-  const { fullName, email, password } = req.body;
-
-  if (!fullName || !email || !password) {
-    throw new ApiError(400, 'All fields are required');
+  const parsedBody = registerBodySchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    throw new ApiError(400, parsedBody.error.errors[0].message);
   }
+
+  const { fullName, email, password } = parsedBody.data;
 
   const existedUser = await User.findOne({ email });
 
@@ -41,25 +49,30 @@ const register = asyncHandler(async (req, res) => {
     password,
   });
 
-  const createdUser = await User.findById(user._id).select(
-    '-password -refreshToken'
-  );
+  const createdUser = await User.findById(user._id)
+    .select('-password -refreshToken')
+    .lean();
 
   if (!createdUser) {
     throw new ApiError(500, 'Something went wrong while registering the user');
   }
 
+  const validatedResponse = userResponseSchema.parse(createdUser);
+
   return res
     .status(201)
-    .json(new ApiResponse(201, createdUser, 'User registered successfully'));
+    .json(
+      new ApiResponse(201, validatedResponse, 'User registered successfully')
+    );
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    throw new ApiError(400, 'Email and password are required');
+  const parsedBody = loginBodySchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    throw new ApiError(400, parsedBody.error.errors[0].message);
   }
+
+  const { email, password } = parsedBody.data;
 
   const user = await User.findOne({ email });
 
@@ -77,15 +90,21 @@ const login = asyncHandler(async (req, res) => {
     user._id
   );
 
-  const loggedInUser = await User.findById(user._id).select(
-    '-password -refreshToken'
-  );
+  const loggedInUser = await User.findById(user._id)
+    .select('-password -refreshToken')
+    .lean();
+
+  const validatedResponse = authResponseSchema.parse({
+    user: loggedInUser,
+    accessToken,
+    refreshToken,
+  });
 
   const accessTokenOptions = {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 1 * 24 * 60 * 60 * 1000,
   };
 
   const refreshTokenOptions = {
@@ -100,24 +119,17 @@ const login = asyncHandler(async (req, res) => {
     .cookie('accessToken', accessToken, accessTokenOptions)
     .cookie('refreshToken', refreshToken, refreshTokenOptions)
     .json(
-      new ApiResponse(
-        200,
-        {
-          user: loggedInUser,
-          accessToken,
-          refreshToken,
-        },
-        'User logged in successfully'
-      )
+      new ApiResponse(200, validatedResponse, 'User logged in successfully')
     );
 });
 
 const googleLogin = asyncHandler(async (req, res) => {
-  const { idToken } = req.body;
-
-  if (!idToken) {
-    throw new ApiError(400, 'Google ID token is required');
+  const parsedBody = googleLoginBodySchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    throw new ApiError(400, parsedBody.error.errors[0].message);
   }
+
+  const { idToken } = parsedBody.data;
 
   let payload;
   try {
@@ -142,9 +154,15 @@ const googleLogin = asyncHandler(async (req, res) => {
     user._id
   );
 
-  const loggedInUser = await User.findById(user._id).select(
-    '-password -refreshToken'
-  );
+  const loggedInUser = await User.findById(user._id)
+    .select('-password -refreshToken')
+    .lean();
+
+  const validatedResponse = authResponseSchema.parse({
+    user: loggedInUser,
+    accessToken,
+    refreshToken,
+  });
 
   const accessTokenOptions = {
     httpOnly: true,
@@ -167,11 +185,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        {
-          user: loggedInUser,
-          accessToken,
-          refreshToken,
-        },
+        validatedResponse,
         'User logged in via Google successfully'
       )
     );
