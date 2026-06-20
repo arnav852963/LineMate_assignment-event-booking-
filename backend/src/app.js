@@ -49,4 +49,6 @@ app.use((err, req, res, next) => {
   });
 });
 
+import authRoutes from './routes/user.routes.js';
+app.use('/api/v1/auth', authRoutes);
 export { httpserver, app, io };
