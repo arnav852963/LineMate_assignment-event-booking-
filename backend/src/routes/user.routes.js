@@ -1,18 +1,20 @@
 import { Router } from 'express';
 import {
-  register,
-  login,
-  googleLogin,
-  logout,
-} from '../controllers/auth.controller.js';
+  getUser,
+  addProfilePhoto,
+  refreshAccessToken,
+} from '../controllers/user.controller.js';
 import { jwt_auth } from '../middlewares/jwt_auth.middleware.js';
+import { upload_mul } from '../middlewares/multer.middleware.js';
 
-const authRoutes = Router();
+const userRoutes = Router();
 
-authRoutes.route('/register').post(register);
-authRoutes.route('/login').post(login);
-authRoutes.route('/googleAuth').post(googleLogin);
+userRoutes.route('/getUser').get(jwt_auth, getUser);
 
-authRoutes.route('/logout').post(jwt_auth, logout);
+userRoutes
+  .route('/addProfilePhoto')
+  .post(jwt_auth, upload_mul.single('profilePhoto'), addProfilePhoto);
 
-export default authRoutes;
+userRoutes.route('/refreshToken').post(refreshAccessToken);
+
+export default userRoutes;
