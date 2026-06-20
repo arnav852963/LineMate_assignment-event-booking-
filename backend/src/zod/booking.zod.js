@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 export const createBookingSchema = z.object({
   eventId: z.string().min(1, 'Event ID is required'),
-  seats: z.array(z.string()).min(1, 'At least one seat must be selected').max(5, 'Cannot book more than 5 seats at once'),
+  seats: z
+    .array(z.string())
+    .min(1, 'At least one seat must be selected')
+    .max(5, 'Cannot book more than 5 seats at once'),
 });
 
 export const cancelBookingSchema = z.object({

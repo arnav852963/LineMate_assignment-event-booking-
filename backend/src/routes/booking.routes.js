@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { createBooking, getMyBookings, cancelBooking } from '../controllers/booking.controller.js';
+import {
+  createBooking,
+  getMyBookings,
+  cancelBooking,
+} from '../controllers/booking.controller.js';
 import { jwt_auth } from '../middlewares/jwt_auth.middleware.js';
 
 const bookingRoutes = Router();

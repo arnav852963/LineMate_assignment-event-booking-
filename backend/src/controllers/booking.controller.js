@@ -3,7 +3,11 @@ import { Event } from '../models/event.model.js';
 import { asyncHandler } from '../utilities/asyncHandler.js';
 import { ApiError } from '../utilities/ApiError.js';
 import { ApiResponse } from '../utilities/ApiResponse.js';
-import { createBookingSchema, cancelBookingSchema, bookingResponseSchema } from '../zod/booking.zod.js';
+import {
+  createBookingSchema,
+  cancelBookingSchema,
+  bookingResponseSchema,
+} from '../zod/booking.zod.js';
 
 const createBooking = asyncHandler(async (req, res) => {
   const parsedBody = createBookingSchema.safeParse(req.body);
@@ -24,34 +28,48 @@ const createBooking = asyncHandler(async (req, res) => {
   const updatedEvent = await Event.findOneAndUpdate(
     {
       _id: eventId,
-      'seatLayout': { 
-        $not: { $elemMatch: { seatId: { $in: seats }, status: { $ne: 'AVAILABLE' } } } 
-      }
+      seatLayout: {
+        $not: {
+          $elemMatch: { seatId: { $in: seats }, status: { $ne: 'AVAILABLE' } },
+        },
+      },
     },
     {
-      $set: { 'seatLayout.$[elem].status': 'BOOKED', 'seatLayout.$[elem].lockedBy': userId },
-      $inc: { availableSeats: -seats.length }
+      $set: {
+        'seatLayout.$[elem].status': 'BOOKED',
+        'seatLayout.$[elem].lockedBy': userId,
+      },
+      $inc: { availableSeats: -seats.length },
     },
     {
       arrayFilters: [{ 'elem.seatId': { $in: seats } }],
-      new: true
+      new: true,
     }
   );
 
   if (!updatedEvent) {
-    throw new ApiError(409, 'Double booking detected! One or more of these seats were just taken. Please try again.');
+    throw new ApiError(
+      409,
+      'Double booking detected! One or more of these seats were just taken. Please try again.'
+    );
   }
 
   const booking = await Booking.create({
     user: userId,
     event: eventId,
     seats: seats,
-    status: 'CONFIRMED'
+    status: 'CONFIRMED',
   });
+
+  req.io.to(eventId).emit('seatsBooked', { seats });
 
   const validatedBooking = bookingResponseSchema.parse(booking);
 
-  return res.status(201).json(new ApiResponse(201, validatedBooking, 'Booking confirmed successfully'));
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, validatedBooking, 'Booking confirmed successfully')
+    );
 });
 
 const getMyBookings = asyncHandler(async (req, res) => {
@@ -64,7 +82,9 @@ const getMyBookings = asyncHandler(async (req, res) => {
     throw new ApiError(500, 'Failed to fetch bookings');
   }
 
-  return res.status(200).json(new ApiResponse(200, bookings, 'Bookings fetched successfully'));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, bookings, 'Bookings fetched successfully'));
 });
 
 const cancelBooking = asyncHandler(async (req, res) => {
@@ -74,7 +94,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
   }
 
   const { bookingId } = parsedBody.data;
-  
+
   const booking = await Booking.findOne({ _id: bookingId, user: req.user._id });
 
   if (!booking) {
@@ -91,17 +111,32 @@ const cancelBooking = asyncHandler(async (req, res) => {
   await Event.updateOne(
     { _id: booking.event },
     {
-      $set: { 'seatLayout.$[elem].status': 'AVAILABLE', 'seatLayout.$[elem].lockedBy': null },
-      $inc: { availableSeats: booking.seats.length }
+      $set: {
+        'seatLayout.$[elem].status': 'AVAILABLE',
+        'seatLayout.$[elem].lockedBy': null,
+      },
+      $inc: { availableSeats: booking.seats.length },
     },
     {
-      arrayFilters: [{ 'elem.seatId': { $in: booking.seats } }]
+      arrayFilters: [{ 'elem.seatId': { $in: booking.seats } }],
     }
   );
 
+  req.io
+    .to(booking.event.toString())
+    .emit('seatsUnlocked', { seats: booking.seats });
+
   const validatedBooking = bookingResponseSchema.parse(booking);
 
-  return res.status(200).json(new ApiResponse(200, validatedBooking, 'Booking cancelled successfully. Seats have been released.'));
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        validatedBooking,
+        'Booking cancelled successfully. Seats have been released.'
+      )
+    );
 });
 
 export { createBooking, getMyBookings, cancelBooking };
