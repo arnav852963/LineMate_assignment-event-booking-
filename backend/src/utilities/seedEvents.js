@@ -2,17 +2,17 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { Event } from '../models/event.model.js';
 
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: './.env' });
 
 const seedEvents = async () => {
   try {
-    if (!process.env.MONGO_URI) {
+    if (!process.env.MONGO_URL) {
       throw new Error(
         'MONGO_URI is missing. Please make sure your .env file is loaded correctly.'
       );
     }
 
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URL);
     await Event.deleteMany({});
 
     const generateLayout = () => {
