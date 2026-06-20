@@ -55,4 +55,6 @@ import authRoutes from './routes/auth.routes.js';
 app.use('/api/v1/auth', authRoutes);
 import userRoutes from './routes/user.routes.js';
 app.use('/api/v1/user', userRoutes);
+import eventRoutes from "./routes/event.routes.js";
+app.use("/api/v1/event", eventRoutes);
 export { httpserver, app, io };
