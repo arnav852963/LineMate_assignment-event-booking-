@@ -4,19 +4,22 @@ import { ApiError } from '../utilities/ApiError.js';
 import { ApiResponse } from '../utilities/ApiResponse.js';
 import { upload } from '../utilities/cloudinary.js';
 import jwt from 'jsonwebtoken';
+import { userResponseSchema } from '../zod/user.zod.js';
 
 const getUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select(
-    '-password -refreshToken'
-  );
+  const user = await User.findById(req.user._id)
+    .select('-password -refreshToken')
+    .lean();
 
   if (!user) {
     throw new ApiError(404, 'User not found');
   }
 
+  const validatedResponse = userResponseSchema.parse(user);
+
   return res
     .status(200)
-    .json(new ApiResponse(200, user, 'User fetched successfully'));
+    .json(new ApiResponse(200, validatedResponse, 'User fetched successfully'));
 });
 
 const addProfilePhoto = asyncHandler(async (req, res) => {
@@ -40,12 +43,20 @@ const addProfilePhoto = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select('-password -refreshToken');
+  )
+    .select('-password -refreshToken')
+    .lean();
+
+  const validatedResponse = userResponseSchema.parse(updatedUser);
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, updatedUser, 'Profile photo updated successfully')
+      new ApiResponse(
+        200,
+        validatedResponse,
+        'Profile photo updated successfully'
+      )
     );
 });
 
