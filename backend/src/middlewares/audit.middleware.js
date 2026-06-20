@@ -4,10 +4,10 @@ export const auditLogMiddleware = (req, res, next) => {
   if (req.method !== 'GET') {
     res.on('finish', async () => {
       try {
-        // We clone the body so we can redact sensitive info
+
         let safePayload = { ...req.body };
         if (safePayload.password) {
-          safePayload.password = '***REDACTED***'; // Never store plaintext passwords in audit logs!
+          safePayload.password = '***REDACTED***';
         }
 
         await Audit.create({
@@ -22,6 +22,5 @@ export const auditLogMiddleware = (req, res, next) => {
       }
     });
   }
-
-  next();
+next()
 };

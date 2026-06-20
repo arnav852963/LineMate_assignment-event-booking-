@@ -32,7 +32,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const register = asyncHandler(async (req, res) => {
   const parsedBody = registerBodySchema.safeParse(req.body);
   if (!parsedBody.success) {
-    throw new ApiError(400, parsedBody.error.errors[0].message);
+    throw new ApiError(400, parsedBody.error.issues[0].message);
   }
 
   const { fullName, email, password } = parsedBody.data;
@@ -69,7 +69,7 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const parsedBody = loginBodySchema.safeParse(req.body);
   if (!parsedBody.success) {
-    throw new ApiError(400, parsedBody.error.errors[0].message);
+    throw new ApiError(400, parsedBody.error.issues[0].message);
   }
 
   const { email, password } = parsedBody.data;
@@ -126,7 +126,7 @@ const login = asyncHandler(async (req, res) => {
 const googleLogin = asyncHandler(async (req, res) => {
   const parsedBody = googleLoginBodySchema.safeParse(req.body);
   if (!parsedBody.success) {
-    throw new ApiError(400, parsedBody.error.errors[0].message);
+    throw new ApiError(400, parsedBody.error.issues[0].message);
   }
 
   const { idToken } = parsedBody.data;
