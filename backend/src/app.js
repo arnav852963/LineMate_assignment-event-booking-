@@ -23,6 +23,11 @@ const io = new Server(httpserver, {
   },
 });
 
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 app.use(
   cors({
     origin: allowedOrigins,
@@ -55,10 +60,13 @@ import authRoutes from './routes/auth.routes.js';
 app.use('/api/v1/auth', authRoutes);
 import userRoutes from './routes/user.routes.js';
 app.use('/api/v1/user', userRoutes);
-import eventRoutes from "./routes/event.routes.js";
-app.use("/api/v1/event", eventRoutes);
+import eventRoutes from './routes/event.routes.js';
+app.use('/api/v1/event', eventRoutes);
 
-import bookingRoutes from "./routes/booking.routes.js";
-app.use("/api/v1/booking", bookingRoutes);
+import bookingRoutes from './routes/booking.routes.js';
+app.use('/api/v1/booking', bookingRoutes);
+
+import { initializeSocketHandlers } from './socket/index.js';
+initializeSocketHandlers(io);
 
 export { httpserver, app, io };

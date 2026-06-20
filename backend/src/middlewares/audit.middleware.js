@@ -4,7 +4,6 @@ export const auditLogMiddleware = (req, res, next) => {
   if (req.method !== 'GET') {
     res.on('finish', async () => {
       try {
-
         let safePayload = { ...req.body };
         if (safePayload.password) {
           safePayload.password = '***REDACTED***';
@@ -22,5 +21,5 @@ export const auditLogMiddleware = (req, res, next) => {
       }
     });
   }
-next()
+  next();
 };
