@@ -57,4 +57,8 @@ import userRoutes from './routes/user.routes.js';
 app.use('/api/v1/user', userRoutes);
 import eventRoutes from "./routes/event.routes.js";
 app.use("/api/v1/event", eventRoutes);
+
+import bookingRoutes from "./routes/booking.routes.js";
+app.use("/api/v1/booking", bookingRoutes);
+
 export { httpserver, app, io };
