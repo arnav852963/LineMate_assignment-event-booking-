@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookie from 'cookie-parser';
-import {auditLogMiddleware} from "./middlewares/audit.middleware.js";
+import { auditLogMiddleware } from './middlewares/audit.middleware.js';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';

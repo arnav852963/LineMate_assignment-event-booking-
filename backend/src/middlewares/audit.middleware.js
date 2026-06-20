@@ -1,9 +1,7 @@
 import { Audit } from '../models/audit.model.js';
 
 export const auditLogMiddleware = (req, res, next) => {
-
   if (req.method !== 'GET') {
-
     res.on('finish', async () => {
       try {
         // We clone the body so we can redact sensitive info
@@ -24,6 +22,6 @@ export const auditLogMiddleware = (req, res, next) => {
       }
     });
   }
-  
+
   next();
 };
