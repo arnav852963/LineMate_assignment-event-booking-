@@ -13,7 +13,7 @@ import Input from '../common/Input.jsx';
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  fullName: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().regex(emailRegex, 'Please enter a valid email address format'),
   password: z
     .string()
@@ -41,9 +41,8 @@ export default function RegisterForm() {
   const onSubmit = async (data) => {
     try {
       setServerError(null);
-      const res = await authApi.register(data);
-      dispatch(loginSuccess(res.data.data.user));
-      navigate(from, { replace: true });
+      await authApi.register(data);
+      navigate('/login');
     } catch (err) {
       setServerError(
         err.response?.data?.message || 'Failed to register. Email might already be in use.',
@@ -88,8 +87,8 @@ export default function RegisterForm() {
           label="Full Name"
           type="text"
           placeholder="John Doe"
-          {...register('name')}
-          error={errors.name}
+          {...register('fullName')}
+          error={errors.fullName}
         />
         <Input
           label="Email Address"

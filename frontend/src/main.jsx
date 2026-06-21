@@ -10,11 +10,8 @@ import App from './App.jsx';
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Profile from './pages/Profile.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
-
-const ProfilePlaceholder = () => (
-  <div className="pt-32 text-center text-stone-600">Profile Dashboard Component</div>
-);
 
 const router = createBrowserRouter([
   {
@@ -49,7 +46,7 @@ const router = createBrowserRouter([
         path: '/profile',
         element: (
           <ProtectedRoute authRequire={true}>
-            <ProfilePlaceholder />
+            <Profile />
           </ProtectedRoute>
         ),
       },
