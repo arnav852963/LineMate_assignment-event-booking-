@@ -16,7 +16,14 @@ export const eventResponseSchema = z.object({
   venue: z.string(),
   totalSeats: z.number(),
   image: z.string().optional(),
-  availableSeats: z.number(),
+  availableSeats: z.number().int().min(0),
+  pricing: z
+    .object({
+      tier1: z.number(),
+      tier2: z.number(),
+      tier3: z.number(),
+    })
+    .optional(),
   seatLayout: z.array(seatSchema).optional(),
   createdAt: z.any().optional(),
   updatedAt: z.any().optional(),

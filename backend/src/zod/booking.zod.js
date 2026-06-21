@@ -17,7 +17,7 @@ export const bookingResponseSchema = z.object({
   _id: z.any(),
   user: z.any().optional(),
   event: z.any().optional(),
-  seats: z.array(z.string()),
+  seats: z.array(z.any()),
   status: z.enum(['CONFIRMED', 'CANCELLED']),
   createdAt: z.any().optional(),
   updatedAt: z.any().optional(),
