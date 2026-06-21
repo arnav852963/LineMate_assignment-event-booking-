@@ -155,13 +155,15 @@ export default function SeatMap({ event, setEvent, selectedSeats, setSelectedSea
         </div>
 
         <div className="flex justify-center min-w-max pb-8">
-          <div className="flex flex-col gap-3 md:gap-4 pr-6 mr-6 border-r-2 border-[#E5D8C5] pt-[34px] md:pt-[40px]">
+          <div className="flex flex-col pr-6 mr-6 border-r-2 border-[#E5D8C5] pt-[34px] md:pt-[40px]">
             {Array.from({ length: numRows }).map((_, i) => (
-              <div
-                key={i}
-                className="h-10 md:h-12 flex items-center justify-center font-bold text-[#A89C86] text-xs md:text-sm tracking-widest"
-              >
-                R{i + 1}
+              <div key={i} className="flex flex-col">
+                {i === 0 && <div className="mt-2 mb-4 h-[26px]"></div>}
+                {i === 5 && <div className="mt-6 mb-4 h-[26px]"></div>}
+                {i === 10 && <div className="mt-6 mb-4 h-[26px]"></div>}
+                <div className="h-10 md:h-12 flex items-center justify-center font-bold text-[#A89C86] text-xs md:text-sm tracking-widest mb-3 md:mb-4">
+                  R{i + 1}
+                </div>
               </div>
             ))}
           </div>
@@ -182,24 +184,67 @@ export default function SeatMap({ event, setEvent, selectedSeats, setSelectedSea
             </div>
 
             <div
-              className="grid gap-3 md:gap-4"
+              className="grid gap-x-3 gap-y-3 md:gap-x-4 md:gap-y-4"
               style={{ gridTemplateColumns: `repeat(${columnsPerRow}, minmax(0, 1fr))` }}
             >
-              {seats.map((seat) => (
-                <button
-                  key={seat.seatId}
-                  disabled={
-                    seat.status !== 'AVAILABLE' &&
-                    !selectedSeats.some((s) => s.seatId === seat.seatId)
+              {seats.reduce((acc, seat, idx) => {
+                const rowIndex = Math.floor(idx / columnsPerRow);
+                const colIndex = idx % columnsPerRow;
+
+                if (colIndex === 0) {
+                  if (rowIndex === 0) {
+                    acc.push(
+                      <div
+                        key="tier1"
+                        className="col-span-full mt-2 mb-1 flex items-center justify-center"
+                      >
+                        <span className="bg-[#E5D8C5] text-[#7a2e0d] px-6 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-[#C8BAA3]">
+                          Premium Tier - ₹{event.pricing?.tier1 || 3000}
+                        </span>
+                      </div>,
+                    );
+                  } else if (rowIndex === 5) {
+                    acc.push(
+                      <div
+                        key="tier2"
+                        className="col-span-full mt-5 mb-1 flex items-center justify-center"
+                      >
+                        <span className="bg-[#F3EFE9] text-stone-500 px-6 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-300">
+                          Gold Tier - ₹{event.pricing?.tier2 || 2000}
+                        </span>
+                      </div>,
+                    );
+                  } else if (rowIndex === 10) {
+                    acc.push(
+                      <div
+                        key="tier3"
+                        className="col-span-full mt-5 mb-1 flex items-center justify-center"
+                      >
+                        <span className="bg-stone-100 text-stone-400 px-6 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-200">
+                          Silver Tier - ₹{event.pricing?.tier3 || 1000}
+                        </span>
+                      </div>,
+                    );
                   }
-                  onClick={() => handleSeatClick(seat)}
-                  title={`Seat ${seat.seatId}`}
-                  className={`
-                    w-10 h-10 md:w-12 md:h-12 rounded-t-2xl rounded-b-lg transition-all duration-300
-                    ${getSeatColor(seat)}
-                  `}
-                />
-              ))}
+                }
+
+                acc.push(
+                  <button
+                    key={seat.seatId}
+                    disabled={
+                      seat.status !== 'AVAILABLE' &&
+                      !selectedSeats.some((s) => s.seatId === seat.seatId)
+                    }
+                    onClick={() => handleSeatClick(seat)}
+                    title={`Seat ${seat.seatId}`}
+                    className={`
+                      w-10 h-10 md:w-12 md:h-12 rounded-t-2xl rounded-b-lg transition-all duration-300
+                      ${getSeatColor(seat)}
+                    `}
+                  />,
+                );
+                return acc;
+              }, [])}
             </div>
           </div>
         </div>

@@ -1,16 +1,47 @@
-import { Calendar, MapPin, Ticket, XCircle, X } from 'lucide-react';
+import { Calendar, MapPin, Ticket, XCircle, X, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { bookingApi } from '../../api/booking.api.js';
 import { toast } from 'react-toastify';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import InvoicePDF from './InvoicePDF.jsx';
 
 export default function BookingCard({ booking, onCancelSuccess }) {
   const { event, seats, status, createdAt, _id } = booking;
-  const isCancelled = status === 'CANCELLED';
 
+  if (!event) {
+    return (
+      <div className="p-6 rounded-3xl border-2 border-stone-200 bg-stone-50 opacity-75">
+        <p className="font-bold text-stone-500">This event is no longer available.</p>
+        <p className="text-sm text-stone-400 mt-2">Booking ID: {_id}</p>
+      </div>
+    );
+  }
+
+  const isCancelled = status === 'CANCELLED';
   const [showModal, setShowModal] = useState(false);
   const [selectedToCancel, setSelectedToCancel] = useState([]);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  const normalizedSeats = seats.map((s) => (typeof s === 'string' ? { seatId: s, price: 0 } : s));
+  const totalAmount = normalizedSeats.reduce((sum, s) => sum + (s.price || 0), 0);
+
+  const getSeatTier = (seatId) => {
+    const match = seatId.match(/R(\d+)-S\d+/);
+    const rowNum = match ? parseInt(match[1], 10) : 1;
+    if (rowNum <= 5) return 'Premium';
+    if (rowNum <= 10) return 'Gold';
+    return 'Silver';
+  };
+
+  const getTierColor = (tier, isSelected) => {
+    if (isSelected) return 'bg-red-50 border-red-300 text-red-800 shadow-inner';
+    if (tier === 'Premium')
+      return 'bg-orange-100/50 border-[#C8BAA3] text-orange-900 hover:border-orange-400 hover:bg-orange-100 shadow-sm';
+    if (tier === 'Gold')
+      return 'bg-[#F3EFE9] border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-[#E5D8C5] shadow-sm';
+    return 'bg-white border-stone-200 text-stone-500 hover:border-stone-300 hover:bg-stone-50 shadow-sm';
+  };
 
   const handleSeatToggle = (seatId) => {
     setSelectedToCancel((prev) =>
@@ -26,11 +57,27 @@ export default function BookingCard({ booking, onCancelSuccess }) {
 
     setIsCancelling(true);
     try {
+      const refundAmount = normalizedSeats
+        .filter((s) => selectedToCancel.includes(s.seatId))
+        .reduce((sum, s) => sum + (s.price || 0), 0);
+
       const res = await bookingApi.cancelBooking({
         bookingId: _id,
         seatsToCancel: selectedToCancel,
       });
-      toast.success('Selected seats have been successfully released.');
+
+      if (refundAmount > 0) {
+        toast.success(
+          `Successfully cancelled! ₹${refundAmount} will be refunded to your original payment method.`,
+          {
+            icon: '💸',
+            className: '!bg-green-50 !text-green-900 !border-green-200 font-bold',
+          },
+        );
+      } else {
+        toast.success('Selected seats have been successfully released.');
+      }
+
       if (onCancelSuccess) onCancelSuccess(res.data.data);
       setShowModal(false);
       setSelectedToCancel([]);
@@ -94,29 +141,62 @@ export default function BookingCard({ booking, onCancelSuccess }) {
             className={`p-4 rounded-2xl border min-w-[140px] flex flex-col justify-between ${isCancelled ? 'bg-stone-100 border-stone-200' : 'bg-white border-[#E5D8C5]'}`}
           >
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Ticket size={16} className={isCancelled ? 'text-stone-400' : 'text-orange-500'} />
-                <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
-                  Seats
-                </span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Ticket
+                    size={16}
+                    className={isCancelled ? 'text-stone-400' : 'text-orange-500'}
+                  />
+                  <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+                    Seats
+                  </span>
+                </div>
+                {totalAmount > 0 && (
+                  <span className="text-xs font-bold text-orange-800">₹{totalAmount}</span>
+                )}
               </div>
               <div className="font-bold text-stone-900">
-                {seats.length > 0 ? seats.join(', ') : 'None'}
+                {normalizedSeats.length > 0
+                  ? normalizedSeats.map((s) => s.seatId).join(', ')
+                  : 'None'}
               </div>
               <div className="text-xs text-stone-500 mt-2 mb-4">
                 Booked on {new Date(createdAt).toLocaleDateString()}
               </div>
             </div>
 
-            {!isCancelled && seats.length > 0 && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 font-bold text-sm rounded-xl transition-colors"
-              >
-                <XCircle size={16} />
-                Cancel Tickets
-              </button>
-            )}
+            <div className="flex flex-col gap-2 w-full mt-4">
+              {!isCancelled && normalizedSeats.length > 0 && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 font-bold text-sm rounded-xl transition-colors"
+                >
+                  <XCircle size={16} />
+                  Cancel Tickets
+                </button>
+              )}
+
+              {normalizedSeats.length > 0 && (
+                <PDFDownloadLink
+                  document={
+                    <InvoicePDF
+                      booking={booking}
+                      normalizedSeats={normalizedSeats}
+                      totalAmount={totalAmount}
+                    />
+                  }
+                  fileName={`invoice-${_id}.pdf`}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-stone-100 text-stone-700 hover:bg-stone-200 font-bold text-sm rounded-xl transition-colors"
+                >
+                  {({ loading }) => (
+                    <>
+                      <Download size={16} />
+                      {loading ? 'Generating...' : 'Download Invoice'}
+                    </>
+                  )}
+                </PDFDownloadLink>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -149,22 +229,25 @@ export default function BookingCard({ booking, onCancelSuccess }) {
                 Your Active Seats
               </span>
               <div className="grid grid-cols-2 gap-3">
-                {seats.map((seatId) => (
-                  <button
-                    key={seatId}
-                    onClick={() => handleSeatToggle(seatId)}
-                    className={`py-3 px-4 rounded-xl font-bold transition-all border-2 flex items-center justify-between ${
-                      selectedToCancel.includes(seatId)
-                        ? 'bg-red-50 border-red-200 text-red-800'
-                        : 'bg-white border-stone-200 text-stone-700 hover:border-orange-200 hover:bg-orange-50'
-                    }`}
-                  >
-                    {seatId}
-                    {selectedToCancel.includes(seatId) && (
-                      <XCircle size={18} className="text-red-500" />
-                    )}
-                  </button>
-                ))}
+                {normalizedSeats.map((seat) => {
+                  const tier = getSeatTier(seat.seatId);
+                  const isSelected = selectedToCancel.includes(seat.seatId);
+                  return (
+                    <button
+                      key={seat.seatId}
+                      onClick={() => handleSeatToggle(seat.seatId)}
+                      className={`p-3 rounded-xl transition-all border-2 flex items-center justify-between text-left ${getTierColor(tier, isSelected)}`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">{seat.seatId}</span>
+                        <span className="text-[10px] font-bold opacity-70 uppercase tracking-widest mt-0.5">
+                          {tier} {seat.price > 0 ? `· ₹${seat.price}` : ''}
+                        </span>
+                      </div>
+                      {isSelected && <XCircle size={20} className="text-red-500 shrink-0 ml-2" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

@@ -14,7 +14,14 @@ export default function CheckoutBar({ selectedSeats, event, setSelectedSeats }) 
 
   if (selectedSeats.length === 0) return null;
 
-  const totalPrice = selectedSeats.length * event.price;
+  const totalPrice = selectedSeats.reduce((acc, seat) => {
+    const match = seat.seatId.match(/R(\d+)-S\d+/);
+    const rowNum = match ? parseInt(match[1], 10) : 1;
+
+    if (rowNum <= 5) return acc + (event.pricing?.tier1 || 3000);
+    if (rowNum <= 10) return acc + (event.pricing?.tier2 || 2000);
+    return acc + (event.pricing?.tier3 || 1000);
+  }, 0);
 
   const handleBookTickets = async () => {
     setIsProcessing(true);
