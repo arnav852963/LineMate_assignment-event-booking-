@@ -1,50 +1,77 @@
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { Ticket } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { Ticket, LogOut, User } from 'lucide-react';
+import { logoutSuccess } from '../../store/authSlice.js';
+import { authApi } from '../../api/auth.api.js';
 
 export default function Navbar() {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      dispatch(logoutSuccess());
+      navigate('/');
+    } catch (err) {
+      console.error('Failed to logout', err);
+      dispatch(logoutSuccess());
+      navigate('/');
+    }
+  };
 
   return (
-    <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
-      <nav className="w-full max-w-5xl bg-white/70 backdrop-blur-md shadow-sm rounded-full px-6 py-3 flex items-center justify-between border border-stone-200">
-        <Link to="/" className="flex items-center gap-2 group">
+    <nav className="fixed top-0 inset-x-0 h-20 bg-texture bg-white/60 backdrop-blur-md border-b border-stone-200 z-50 transition-all">
+      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3 group">
           <div className="bg-orange-800 p-2 rounded-full text-white group-hover:scale-105 transition-transform">
             <Ticket size={20} />
           </div>
           <span className="font-serif text-xl font-bold text-stone-800 tracking-tight">Aura</span>
         </Link>
 
+        <div className="flex-grow"></div>
+
         <div className="flex items-center gap-4">
-          {!isAuthenticated ? (
-            <Link
-              to="/login"
-              className="text-sm font-medium bg-stone-900 text-stone-50 px-5 py-2 rounded-full hover:bg-orange-800 transition-colors"
-            >
-              Sign In
-            </Link>
-          ) : (
-            <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <>
               <Link
                 to="/profile"
-                className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-colors flex items-center gap-2"
+                title="Profile"
               >
-                My Tickets
+                <div className="bg-stone-200 p-1.5 rounded-full">
+                  <User size={18} className="text-stone-700" />
+                </div>
               </Link>
-              <div className="w-9 h-9 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-sm">
-                <img
-                  src={
-                    user?.profilePhoto ||
-                    `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}`
-                  }
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+
+              <button
+                onClick={handleLogout}
+                className="p-2.5 text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center gap-2"
+                title="Log Out"
+              >
+                <LogOut size={20} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="px-5 py-2.5 text-sm font-bold text-stone-600 hover:text-stone-900 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="px-5 py-2.5 text-sm font-bold bg-stone-900 text-white rounded-full hover:bg-orange-800 transition-colors shadow-sm"
+              >
+                Get Started
+              </Link>
+            </>
           )}
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 }

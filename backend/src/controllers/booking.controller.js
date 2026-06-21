@@ -12,7 +12,10 @@ import {
 const createBooking = asyncHandler(async (req, res) => {
   const parsedBody = createBookingSchema.safeParse(req.body);
   if (!parsedBody.success) {
-    throw new ApiError(400, parsedBody.error.errors[0].message);
+    throw new ApiError(
+      400,
+      parsedBody.error?.errors?.[0]?.message || 'Invalid booking data provided'
+    );
   }
 
   const { eventId, seats } = parsedBody.data;
@@ -30,7 +33,13 @@ const createBooking = asyncHandler(async (req, res) => {
       _id: eventId,
       seatLayout: {
         $not: {
-          $elemMatch: { seatId: { $in: seats }, status: { $ne: 'AVAILABLE' } },
+          $elemMatch: {
+            seatId: { $in: seats },
+            $or: [
+              { status: 'BOOKED' },
+              { status: 'LOCKED', lockedBy: { $ne: userId } },
+            ],
+          },
         },
       },
     },
@@ -90,7 +99,11 @@ const getMyBookings = asyncHandler(async (req, res) => {
 const cancelBooking = asyncHandler(async (req, res) => {
   const parsedBody = cancelBookingSchema.safeParse(req.body);
   if (!parsedBody.success) {
-    throw new ApiError(400, parsedBody.error.errors[0].message);
+    throw new ApiError(
+      400,
+      parsedBody.error?.errors?.[0]?.message ||
+        'Invalid cancellation data provided'
+    );
   }
 
   const { bookingId } = parsedBody.data;
