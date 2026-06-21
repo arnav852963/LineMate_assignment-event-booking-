@@ -14,7 +14,7 @@ const bookingSchema = new Schema(
     },
     seats: [
       {
-        type: String,
+        type: Schema.Types.Mixed,
         required: true,
       },
     ],

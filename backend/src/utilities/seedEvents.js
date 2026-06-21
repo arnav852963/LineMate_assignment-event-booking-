@@ -49,6 +49,7 @@ const seedEvents = async () => {
         venue: 'Jawaharlal Nehru Stadium, Delhi',
         totalSeats: 500,
         availableSeats: 500,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(500),
       },
       {
@@ -61,6 +62,7 @@ const seedEvents = async () => {
         venue: 'Vagator Beach, Goa',
         totalSeats: 500,
         availableSeats: 500,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(500),
       },
       {
@@ -73,6 +75,7 @@ const seedEvents = async () => {
         venue: 'Bharat Mandapam, New Delhi',
         totalSeats: 250,
         availableSeats: 250,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(250),
       },
       {
@@ -85,6 +88,7 @@ const seedEvents = async () => {
         venue: 'Bangalore International Exhibition Centre, Bengaluru',
         totalSeats: 250,
         availableSeats: 250,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(250),
       },
       {
@@ -97,6 +101,7 @@ const seedEvents = async () => {
         venue: 'Shanmukhananda Hall, Mumbai',
         totalSeats: 150,
         availableSeats: 150,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(150),
       },
       {
@@ -109,6 +114,7 @@ const seedEvents = async () => {
         venue: 'Diggi Palace, Jaipur',
         totalSeats: 300,
         availableSeats: 300,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(300),
       },
       {
@@ -121,6 +127,7 @@ const seedEvents = async () => {
         venue: 'Jio World Convention Centre, Mumbai',
         totalSeats: 450,
         availableSeats: 450,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(450),
       },
       {
@@ -133,6 +140,7 @@ const seedEvents = async () => {
         venue: 'Mahalaxmi Lawns, Pune',
         totalSeats: 450,
         availableSeats: 450,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(450),
       },
       {
@@ -145,6 +153,7 @@ const seedEvents = async () => {
         venue: 'Hitex Exhibition Center, Hyderabad',
         totalSeats: 200,
         availableSeats: 200,
+        pricing: { tier1: 3000, tier2: 2000, tier3: 1000 },
         seatLayout: generateLayout(200),
       },
     ];

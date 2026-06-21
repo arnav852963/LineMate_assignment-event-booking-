@@ -51,6 +51,11 @@ const eventSchema = new Schema(
       type: Number,
       required: true,
     },
+    pricing: {
+      tier1: { type: Number, required: true },
+      tier2: { type: Number, required: true },
+      tier3: { type: Number, required: true },
+    },
     seatLayout: [seatSchema],
   },
   { timestamps: true }

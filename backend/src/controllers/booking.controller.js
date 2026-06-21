@@ -63,10 +63,20 @@ const createBooking = asyncHandler(async (req, res) => {
     );
   }
 
+  const seatObjects = seats.map((seatId) => {
+    const match = seatId.match(/R(\d+)-S\d+/);
+    const rowNum = match ? parseInt(match[1], 10) : 1;
+    let price = event.pricing?.tier3 || 1000;
+    if (rowNum <= 5) price = event.pricing?.tier1 || 3000;
+    else if (rowNum <= 10) price = event.pricing?.tier2 || 2000;
+
+    return { seatId, price };
+  });
+
   const booking = await Booking.create({
     user: userId,
     event: eventId,
-    seats: seats,
+    seats: seatObjects,
     status: 'CONFIRMED',
   });
 
@@ -118,11 +128,12 @@ const cancelBooking = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Booking is already cancelled');
   }
 
-  let finalSeatsToCancel = booking.seats;
+  const getSeatId = (seat) => (typeof seat === 'string' ? seat : seat.seatId);
+  let finalSeatsToCancel = booking.seats.map(getSeatId);
 
   if (seatsToCancel && seatsToCancel.length > 0) {
-    const allBelong = seatsToCancel.every((seat) =>
-      booking.seats.includes(seat)
+    const allBelong = seatsToCancel.every((seatToCancelId) =>
+      booking.seats.some((s) => getSeatId(s) === seatToCancelId)
     );
     if (!allBelong) {
       throw new ApiError(
@@ -134,7 +145,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
   }
 
   const remainingSeats = booking.seats.filter(
-    (seat) => !finalSeatsToCancel.includes(seat)
+    (seat) => !finalSeatsToCancel.includes(getSeatId(seat))
   );
 
   if (remainingSeats.length === 0) {

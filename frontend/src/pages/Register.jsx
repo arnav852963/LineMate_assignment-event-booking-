@@ -1,7 +1,15 @@
 import CoverImage from '../components/common/CoverImage.jsx';
 import RegisterForm from '../components/auth/RegisterForm.jsx';
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
 
 export default function Register() {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center pt-20 px-4 md:px-6">
       <div className="w-full max-w-5xl bg-white rounded-[2.5rem] shadow-sm border border-stone-100 flex overflow-hidden min-h-[600px]">
