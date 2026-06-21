@@ -9,67 +9,150 @@ const seedEvents = async () => {
   try {
     if (!process.env.MONGO_URL) {
       throw new Error(
-        'MONGO_URI is missing. Please make sure your .env file is loaded correctly.'
+        'MONGO_URL is missing. Please make sure your .env file is loaded correctly.'
       );
     }
 
     await mongoose.connect(process.env.MONGO_URL + DB_NAME);
+
     await Event.deleteMany({});
 
-    const generateLayout = () => {
+    const generateLayout = (totalSeats) => {
       const layout = [];
-      const rows = ['A', 'B', 'C', 'D', 'E'];
-      for (let row of rows) {
-        for (let i = 1; i <= 10; i++) {
+
+      let seatCount = 0;
+
+      for (let row = 1; seatCount < totalSeats; row++) {
+        for (let seat = 1; seat <= 10 && seatCount < totalSeats; seat++) {
           layout.push({
-            seatId: `${row}${i}`,
+            seatId: `R${row}-S${seat}`,
             status: 'AVAILABLE',
             lockedBy: null,
             lockExpiresAt: null,
           });
+
+          seatCount++;
         }
       }
+
       return layout;
     };
 
     const dummyEvents = [
       {
-        name: 'Coldplay Music of the Spheres Tour',
+        name: 'Arijit Singh India Tour 2026',
         description:
-          'Experience the magic of Coldplay live in an unforgettable, color-filled stadium concert.',
-        dateTime: new Date('2026-10-15T19:00:00Z'),
-        venue: 'Wembley Stadium, London',
-        totalSeats: 50,
-        availableSeats: 50,
-        seatLayout: generateLayout(),
+          'Experience an unforgettable live performance by Arijit Singh featuring his greatest hits.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058476/arijit_znwzxc.png',
+        dateTime: new Date('2026-07-12T19:00:00Z'),
+        venue: 'Jawaharlal Nehru Stadium, Delhi',
+        totalSeats: 500,
+        availableSeats: 500,
+        seatLayout: generateLayout(500),
       },
       {
-        name: 'Tech Innovators Conference 2026',
+        name: 'Sunburn Goa Festival 2026',
         description:
-          'The biggest gathering of developers, startups, and tech enthusiasts. Connect and learn.',
-        dateTime: new Date('2026-08-20T09:00:00Z'),
-        venue: 'Moscone Center, San Francisco',
-        totalSeats: 50,
-        availableSeats: 50,
-        seatLayout: generateLayout(),
+          'India’s biggest electronic dance music festival featuring world-renowned DJs.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058553/sunburn-goa_qw6onh.png',
+        dateTime: new Date('2026-12-28T17:00:00Z'),
+        venue: 'Vagator Beach, Goa',
+        totalSeats: 500,
+        availableSeats: 500,
+        seatLayout: generateLayout(500),
       },
       {
-        name: 'Standup Comedy Night: The Legends',
+        name: 'India Tech Summit 2026',
         description:
-          'A night full of laughter featuring the absolute top comedians in the world right now.',
-        dateTime: new Date('2026-07-05T20:30:00Z'),
-        venue: 'The Comedy Cellar, New York',
-        totalSeats: 50,
-        availableSeats: 50,
-        seatLayout: generateLayout(),
+          'A premier technology conference bringing together startups, developers, and industry leaders.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058476/indian-tech-sumit_fakflz.png',
+        dateTime: new Date('2026-09-10T09:00:00Z'),
+        venue: 'Bharat Mandapam, New Delhi',
+        totalSeats: 250,
+        availableSeats: 250,
+        seatLayout: generateLayout(250),
+      },
+      {
+        name: 'Bengaluru Startup Expo 2026',
+        description:
+          'Showcasing India’s most innovative startups, investors, and entrepreneurs.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058476/bangalore-startup_veimuo.png',
+        dateTime: new Date('2026-08-15T10:00:00Z'),
+        venue: 'Bangalore International Exhibition Centre, Bengaluru',
+        totalSeats: 250,
+        availableSeats: 250,
+        seatLayout: generateLayout(250),
+      },
+      {
+        name: 'Zakir Khan Live',
+        description:
+          'An evening of laughter and storytelling with one of India’s most loved comedians.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058572/zakir_khan_y7iu0b.png',
+        dateTime: new Date('2026-07-25T19:30:00Z'),
+        venue: 'Shanmukhananda Hall, Mumbai',
+        totalSeats: 150,
+        availableSeats: 150,
+        seatLayout: generateLayout(150),
+      },
+      {
+        name: 'Jaipur Literature Festival 2026',
+        description:
+          'A celebration of books, ideas, and conversations with renowned authors and thinkers.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058551/jaipur_f1rpc9.png',
+        dateTime: new Date('2026-01-23T10:00:00Z'),
+        venue: 'Diggi Palace, Jaipur',
+        totalSeats: 300,
+        availableSeats: 300,
+        seatLayout: generateLayout(300),
+      },
+      {
+        name: 'Comic Con India Mumbai 2026',
+        description:
+          'The biggest gathering of comic book fans, gamers, cosplayers, and pop culture enthusiasts.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058513/comiccon_sv5iiv.png',
+        dateTime: new Date('2026-11-14T11:00:00Z'),
+        venue: 'Jio World Convention Centre, Mumbai',
+        totalSeats: 450,
+        availableSeats: 450,
+        seatLayout: generateLayout(450),
+      },
+      {
+        name: 'NH7 Weekender Pune 2026',
+        description:
+          'India’s happiest music festival featuring top national and international artists.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058558/NHH-7_miqmek.png',
+        dateTime: new Date('2026-11-28T15:00:00Z'),
+        venue: 'Mahalaxmi Lawns, Pune',
+        totalSeats: 450,
+        availableSeats: 450,
+        seatLayout: generateLayout(450),
+      },
+      {
+        name: 'India Gaming Championship 2026',
+        description:
+          'The ultimate esports showdown featuring top teams from across the country.',
+        image:
+          'https://res.cloudinary.com/dyld0tdro/image/upload/v1782058477/indian_gaming_rusdcm.png',
+        dateTime: new Date('2026-10-03T12:00:00Z'),
+        venue: 'Hitex Exhibition Center, Hyderabad',
+        totalSeats: 200,
+        availableSeats: 200,
+        seatLayout: generateLayout(200),
       },
     ];
 
     await Event.insertMany(dummyEvents);
-    console.log('Seeding complete!');
+
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding events:', error);
     process.exit(1);
   }
 };

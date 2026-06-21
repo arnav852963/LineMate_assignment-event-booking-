@@ -15,6 +15,7 @@ export const eventResponseSchema = z.object({
   dateTime: z.any(),
   venue: z.string(),
   totalSeats: z.number(),
+  image: z.string().optional(),
   availableSeats: z.number(),
   seatLayout: z.array(seatSchema).optional(),
   createdAt: z.any().optional(),

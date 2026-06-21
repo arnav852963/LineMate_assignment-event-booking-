@@ -44,6 +44,9 @@ const eventSchema = new Schema(
       type: Number,
       required: true,
     },
+    image: {
+      type: String,
+    },
     availableSeats: {
       type: Number,
       required: true,
