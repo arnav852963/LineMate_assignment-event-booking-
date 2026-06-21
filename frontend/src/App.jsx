@@ -4,7 +4,7 @@ import Footer from './components/layout/Footer.jsx';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-stone-900 flex flex-col selection:bg-orange-800 selection:text-white">
+    <div className="min-h-screen bg-texture selection:bg-orange-800 selection:text-white font-sans text-stone-900 flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Outlet />

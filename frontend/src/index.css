@@ -1,1 +1,14 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@layer utilities {
+  .bg-texture {
+    background-color: #faf8f5;
+    background-image: radial-gradient(#d6d3d1 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+  }
+}
