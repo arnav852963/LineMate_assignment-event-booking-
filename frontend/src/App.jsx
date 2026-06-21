@@ -5,6 +5,8 @@ import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import { userApi } from './api/user.api.js';
 import { loginSuccess, logoutSuccess } from './store/authSlice.js';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -50,6 +52,13 @@ export default function App() {
         <Outlet />
       </main>
       <Footer />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar
+        closeButton={false}
+        toastClassName="!bg-[#F3EFE9] !text-stone-800 !font-bold !font-sans !rounded-2xl !border-2 !border-[#E5D8C5] !shadow-2xl !px-6 !py-4"
+      />
     </div>
   );
 }

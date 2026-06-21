@@ -11,6 +11,7 @@ import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
+import EventDetails from './pages/EventDetails.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
 
 const router = createBrowserRouter([
@@ -20,11 +21,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: (
-          <ProtectedRoute authRequire={false}>
-            <Home />
-          </ProtectedRoute>
-        ),
+        element: <Home />,
       },
       {
         path: '/login',
@@ -47,6 +44,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute authRequire={true}>
             <Profile />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/event/:eventId',
+        element: (
+          <ProtectedRoute authRequire={true}>
+            <EventDetails />
           </ProtectedRoute>
         ),
       },
