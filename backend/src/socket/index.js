@@ -1,7 +1,12 @@
 import { Event } from '../models/event.model.js';
+import { startSeatUnlockCron } from './cron.js';
 
 export const initializeSocketHandlers = (io) => {
+  const socketLocks = new Map();
+
   io.on('connection', (socket) => {
+    socketLocks.set(socket.id, []);
+
     socket.on('joinEventRoom', (eventId) => {
       socket.join(eventId);
     });
@@ -22,7 +27,7 @@ export const initializeSocketHandlers = (io) => {
               'seatLayout.$[elem].status': 'LOCKED',
               'seatLayout.$[elem].lockedBy': userId,
               'seatLayout.$[elem].lockExpiresAt': new Date(
-                Date.now() + 5 * 60 * 1000
+                Date.now() + 2 * 60 * 1000
               ),
             },
           },
@@ -34,8 +39,13 @@ export const initializeSocketHandlers = (io) => {
 
         if (updatedEvent) {
           socket.to(eventId).emit('seatLocked', { seatId, lockedBy: userId });
+          const locks = socketLocks.get(socket.id) || [];
+          locks.push({ eventId, seatId, userId });
+          socketLocks.set(socket.id, locks);
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error('Socket lockSeat error:', error);
+      }
     });
 
     socket.on('unlockSeat', async ({ eventId, seatId, userId }) => {
@@ -65,11 +75,54 @@ export const initializeSocketHandlers = (io) => {
         );
 
         if (updatedEvent) {
-          socket.to(eventId).emit('seatUnlocked', { seatId });
+          io.to(eventId).emit('seatUnlocked', { seatId });
+          let locks = socketLocks.get(socket.id) || [];
+          locks = locks.filter((l) => l.seatId !== seatId);
+          socketLocks.set(socket.id, locks);
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error('Socket unlockSeat error:', error);
+      }
     });
 
-    socket.on('disconnect', () => {});
+    socket.on('disconnect', async () => {
+      const locks = socketLocks.get(socket.id) || [];
+      for (const lock of locks) {
+        try {
+          const updatedEvent = await Event.findOneAndUpdate(
+            {
+              _id: lock.eventId,
+              seatLayout: {
+                $elemMatch: {
+                  seatId: lock.seatId,
+                  status: 'LOCKED',
+                  lockedBy: lock.userId,
+                },
+              },
+            },
+            {
+              $set: {
+                'seatLayout.$[elem].status': 'AVAILABLE',
+                'seatLayout.$[elem].lockedBy': null,
+                'seatLayout.$[elem].lockExpiresAt': null,
+              },
+            },
+            {
+              arrayFilters: [{ 'elem.seatId': lock.seatId }],
+              new: true,
+            }
+          );
+
+          if (updatedEvent) {
+            io.to(lock.eventId).emit('seatUnlocked', { seatId: lock.seatId });
+          }
+        } catch (error) {
+          console.error('Socket disconnect unlock error:', error);
+        }
+      }
+      socketLocks.delete(socket.id);
+    });
   });
+
+  startSeatUnlockCron(io);
 };
