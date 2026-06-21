@@ -83,7 +83,7 @@ const createBooking = asyncHandler(async (req, res) => {
 
 const getMyBookings = asyncHandler(async (req, res) => {
   const bookings = await Booking.find({ user: req.user._id })
-    .populate('event', 'name venue dateTime thumbnailUrl')
+    .populate('event', 'name venue dateTime image')
     .sort({ createdAt: -1 })
     .lean();
 
@@ -106,7 +106,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
     );
   }
 
-  const { bookingId } = parsedBody.data;
+  const { bookingId, seatsToCancel } = parsedBody.data;
 
   const booking = await Booking.findOne({ _id: bookingId, user: req.user._id });
 
@@ -118,7 +118,32 @@ const cancelBooking = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Booking is already cancelled');
   }
 
-  booking.status = 'CANCELLED';
+  let finalSeatsToCancel = booking.seats;
+
+  if (seatsToCancel && seatsToCancel.length > 0) {
+    const allBelong = seatsToCancel.every((seat) =>
+      booking.seats.includes(seat)
+    );
+    if (!allBelong) {
+      throw new ApiError(
+        400,
+        'Some selected seats do not belong to this booking'
+      );
+    }
+    finalSeatsToCancel = seatsToCancel;
+  }
+
+  const remainingSeats = booking.seats.filter(
+    (seat) => !finalSeatsToCancel.includes(seat)
+  );
+
+  if (remainingSeats.length === 0) {
+    booking.status = 'CANCELLED';
+    booking.seats = [];
+  } else {
+    booking.seats = remainingSeats;
+  }
+
   await booking.save();
 
   await Event.updateOne(
@@ -128,16 +153,16 @@ const cancelBooking = asyncHandler(async (req, res) => {
         'seatLayout.$[elem].status': 'AVAILABLE',
         'seatLayout.$[elem].lockedBy': null,
       },
-      $inc: { availableSeats: booking.seats.length },
+      $inc: { availableSeats: finalSeatsToCancel.length },
     },
     {
-      arrayFilters: [{ 'elem.seatId': { $in: booking.seats } }],
+      arrayFilters: [{ 'elem.seatId': { $in: finalSeatsToCancel } }],
     }
   );
 
   req.io
     .to(booking.event.toString())
-    .emit('seatsUnlocked', { seats: booking.seats });
+    .emit('seatsUnlocked', { seats: finalSeatsToCancel });
 
   const validatedBooking = bookingResponseSchema.parse(booking);
 
@@ -147,7 +172,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         validatedBooking,
-        'Booking cancelled successfully. Seats have been released.'
+        'Booking updated successfully. Seats have been released.'
       )
     );
 });
