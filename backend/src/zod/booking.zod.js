@@ -10,6 +10,7 @@ export const createBookingSchema = z.object({
 
 export const cancelBookingSchema = z.object({
   bookingId: z.string().min(1, 'Booking ID is required'),
+  seatsToCancel: z.array(z.string()).optional(),
 });
 
 export const bookingResponseSchema = z.object({
