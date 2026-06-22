@@ -47,5 +47,5 @@ export const startSeatUnlockCron = (io) => {
         }
       }
     } catch (error) {}
-  }, 60 * 1000);
+  }, 20 * 1000);
 };
