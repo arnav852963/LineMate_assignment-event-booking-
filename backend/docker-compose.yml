@@ -1,5 +1,5 @@
 version: '3.8'
-
+# the local mongo environment and mongo-express for testing and development purposes
 services:
   mongodb:
     image: mongo:latest
