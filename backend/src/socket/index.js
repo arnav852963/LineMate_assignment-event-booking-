@@ -44,7 +44,6 @@ export const initializeSocketHandlers = (io) => {
           socketLocks.set(socket.id, locks);
         }
       } catch (error) {
-        console.error('Socket lockSeat error:', error);
       }
     });
 
@@ -81,7 +80,6 @@ export const initializeSocketHandlers = (io) => {
           socketLocks.set(socket.id, locks);
         }
       } catch (error) {
-        console.error('Socket unlockSeat error:', error);
       }
     });
 
@@ -117,7 +115,6 @@ export const initializeSocketHandlers = (io) => {
             io.to(lock.eventId).emit('seatUnlocked', { seatId: lock.seatId });
           }
         } catch (error) {
-          console.error('Socket disconnect unlock error:', error);
         }
       }
       socketLocks.delete(socket.id);

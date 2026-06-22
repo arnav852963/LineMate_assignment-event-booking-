@@ -17,14 +17,11 @@ db()
     const PORT = process.env.PORT || 8000;
 
     httpserver.listen(PORT, () => {
-      console.log('running at ', PORT);
     });
     app.on('error', (error) => {
-      console.log('error for listening ', error);
       throw error;
     });
   })
   .catch((e) => {
-    console.log('error in mongo connection', e.message);
     throw new ApiError(500, `error in mongo ->${e.message}`);
   });

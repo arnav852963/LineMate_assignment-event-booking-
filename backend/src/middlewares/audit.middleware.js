@@ -17,7 +17,6 @@ export const auditLogMiddleware = (req, res, next) => {
           ipAddress: req.ip || req.connection?.remoteAddress,
         });
       } catch (error) {
-        console.error('Failed to create audit log:', error);
       }
     });
   }

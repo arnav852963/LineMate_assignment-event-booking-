@@ -47,7 +47,6 @@ export const startSeatUnlockCron = (io) => {
         }
       }
     } catch (error) {
-      console.error('Cron job unlock error:', error);
     }
   }, 60 * 1000);
 };
