@@ -39,10 +39,10 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: 'assignment_linemate'
-          environment_name: 'Assignmentlinemate-env'
+          application_name: 'assignment'
+          environment_name: 'Assignment-env'
           version_label: 'deploy-${{ github.sha }}'
-          region: 'ap-southeast-2'
+          region: 'ap-south-1'
           deployment_package: backend/deploy.zip
           wait_for_deployment: true
           use_existing_version_if_available: true
