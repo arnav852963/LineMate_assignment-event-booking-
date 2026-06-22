@@ -38,7 +38,7 @@ export const initializeSocketHandlers = (io) => {
         );
 
         if (updatedEvent) {
-          socket.to(eventId).emit('seatLocked', { seatId, lockedBy: userId });
+          io.to(eventId).emit('seatLocked', { seatId, lockedBy: userId });
           const locks = socketLocks.get(socket.id) || [];
           locks.push({ eventId, seatId, userId });
           socketLocks.set(socket.id, locks);
