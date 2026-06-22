@@ -16,39 +16,28 @@ export const startSeatUnlockCron = (io) => {
       });
 
       for (const event of events) {
-        for (const seat of event.seatLayout) {
-          if (
-            seat.status === 'LOCKED' &&
-            seat.lockExpiresAt &&
-            seat.lockExpiresAt <= now
-          ) {
-            const updated = await Event.findOneAndUpdate(
-              {
-                _id: event._id,
-                seatLayout: {
-                  $elemMatch: {
-                    seatId: seat.seatId,
-                    status: 'LOCKED',
-                    lockExpiresAt: { $lte: now },
-                  },
-                },
-              },
-              {
-                $set: {
-                  'seatLayout.$[elem].status': 'AVAILABLE',
-                  'seatLayout.$[elem].lockedBy': null,
-                  'seatLayout.$[elem].lockExpiresAt': null,
-                },
-              },
-              { arrayFilters: [{ 'elem.seatId': seat.seatId }], new: true }
-            );
+        const expiredSeats = event.seatLayout
+          .filter((s) => s.status === 'LOCKED' && s.lockExpiresAt && s.lockExpiresAt <= now)
+          .map((s) => s.seatId);
 
-            if (updated) {
-              io.to(event._id.toString()).emit('seatUnlocked', {
-                seatId: seat.seatId,
-              });
+        if (expiredSeats.length > 0) {
+          await Event.updateOne(
+            { _id: event._id },
+            {
+              $set: {
+                'seatLayout.$[elem].status': 'AVAILABLE',
+                'seatLayout.$[elem].lockedBy': null,
+                'seatLayout.$[elem].lockExpiresAt': null,
+              },
+            },
+            {
+              arrayFilters: [{ 'elem.seatId': { $in: expiredSeats }, 'elem.status': 'LOCKED' }],
             }
-          }
+          );
+
+          io.to(event._id.toString()).emit('seatsUnlocked', {
+            seats: expiredSeats,
+          });
         }
       }
     } catch (error) {
@@ -56,5 +45,5 @@ export const startSeatUnlockCron = (io) => {
     } finally {
       isRunning = false;
     }
-  }, 1000);
+  }, 15000);
 };
