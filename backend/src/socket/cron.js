@@ -35,8 +35,8 @@ export const startSeatUnlockCron = (io) => {
             }
           );
 
-          io.to(event._id.toString()).emit('seatsUnlocked', {
-            seats: expiredSeats,
+          expiredSeats.forEach((seatId) => {
+            io.to(event._id.toString()).emit('seatUnlocked', { seatId });
           });
         }
       }
