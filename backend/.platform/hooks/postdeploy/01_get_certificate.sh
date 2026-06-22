@@ -8,17 +8,17 @@ sudo /opt/certbot/bin/pip install certbot certbot-nginx
 sudo ln -sf /opt/certbot/bin/certbot /usr/bin/certbot
 
 
-sudo certbot certonly --nginx --non-interactive --agree-tos --email arnavticku@gmail.com -d assignmentlinemate-env.eba-53cfsmfi.ap-southeast-2.elasticbeanstalk.com
+sudo certbot certonly --nginx --non-interactive --agree-tos --email arnavticku@gmail.com -d assignment-env.eba-uenfuein.ap-south-1.elasticbeanstalk.com
 
 
 
 sudo tee /etc/nginx/conf.d/https_custom.conf > /dev/null << 'EOF'
 server {
     listen 443 ssl;
-    server_name assignmentlinemate-env.eba-53cfsmfi.ap-southeast-2.elasticbeanstalk.com;
+    server_name assignment-env.eba-uenfuein.ap-south-1.elasticbeanstalk.com;
 
-    ssl_certificate /etc/letsencrypt/live/assignmentlinemate-env.eba-53cfsmfi.ap-southeast-2.elasticbeanstalk.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/assignmentlinemate-env.eba-53cfsmfi.ap-southeast-2.elasticbeanstalk.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/assignment-env.eba-uenfuein.ap-south-1.elasticbeanstalk.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/assignment-env.eba-uenfuein.ap-south-1.elasticbeanstalk.com/privkey.pem;
 
     location / {
         proxy_pass http://127.0.0.1:8080;
