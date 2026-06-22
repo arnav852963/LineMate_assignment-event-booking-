@@ -1,7 +1,12 @@
 import { Event } from '../models/event.model.js';
 
 export const startSeatUnlockCron = (io) => {
+  let isRunning = false;
+
   setInterval(async () => {
+    if (isRunning) return;
+    isRunning = true;
+
     try {
       const now = new Date();
       const events = await Event.find({
@@ -46,6 +51,10 @@ export const startSeatUnlockCron = (io) => {
           }
         }
       }
-    } catch (error) {}
-  }, 20 * 1000);
+    } catch (error) {
+      console.error('Seat Unlock Cron Error:', error);
+    } finally {
+      isRunning = false;
+    }
+  }, 1000);
 };
