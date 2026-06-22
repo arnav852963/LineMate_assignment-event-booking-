@@ -16,28 +16,39 @@ export const startSeatUnlockCron = (io) => {
       });
 
       for (const event of events) {
-        const expiredSeats = event.seatLayout
-          .filter((s) => s.status === 'LOCKED' && s.lockExpiresAt && s.lockExpiresAt <= now)
-          .map((s) => s.seatId);
-
-        if (expiredSeats.length > 0) {
-          await Event.updateOne(
-            { _id: event._id },
-            {
-              $set: {
-                'seatLayout.$[elem].status': 'AVAILABLE',
-                'seatLayout.$[elem].lockedBy': null,
-                'seatLayout.$[elem].lockExpiresAt': null,
+        for (const seat of event.seatLayout) {
+          if (
+            seat.status === 'LOCKED' &&
+            seat.lockExpiresAt &&
+            seat.lockExpiresAt <= now
+          ) {
+            const updated = await Event.findOneAndUpdate(
+              {
+                _id: event._id,
+                seatLayout: {
+                  $elemMatch: {
+                    seatId: seat.seatId,
+                    status: 'LOCKED',
+                    lockExpiresAt: { $lte: now },
+                  },
+                },
               },
-            },
-            {
-              arrayFilters: [{ 'elem.seatId': { $in: expiredSeats }, 'elem.status': 'LOCKED' }],
-            }
-          );
+              {
+                $set: {
+                  'seatLayout.$[elem].status': 'AVAILABLE',
+                  'seatLayout.$[elem].lockedBy': null,
+                  'seatLayout.$[elem].lockExpiresAt': null,
+                },
+              },
+              { arrayFilters: [{ 'elem.seatId': seat.seatId }], new: true }
+            );
 
-          expiredSeats.forEach((seatId) => {
-            io.to(event._id.toString()).emit('seatUnlocked', { seatId });
-          });
+            if (updated) {
+              io.to(event._id.toString()).emit('seatUnlocked', {
+                seatId: seat.seatId,
+              });
+            }
+          }
         }
       }
     } catch (error) {
@@ -45,5 +56,5 @@ export const startSeatUnlockCron = (io) => {
     } finally {
       isRunning = false;
     }
-  }, 15000);
+  }, 1000);
 };
