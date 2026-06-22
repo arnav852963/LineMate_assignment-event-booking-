@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 1. Install Certbot
+
 sudo dnf install -y python3 augeas-libs
 sudo python3 -m venv /opt/certbot/
 sudo /opt/certbot/bin/pip install --upgrade pip
@@ -11,7 +11,8 @@ sudo ln -sf /opt/certbot/bin/certbot /usr/bin/certbot
 sudo certbot certonly --nginx --non-interactive --agree-tos --email arnavticku@gmail.com -d assignmentlinemate-env.eba-53cfsmfi.ap-southeast-2.elasticbeanstalk.com
 
 
-sudo cat << 'EOF' > /etc/nginx/conf.d/https_custom.conf
+
+sudo tee /etc/nginx/conf.d/https_custom.conf > /dev/null << 'EOF'
 server {
     listen 443 ssl;
     server_name assignmentlinemate-env.eba-53cfsmfi.ap-southeast-2.elasticbeanstalk.com;
@@ -30,4 +31,5 @@ server {
 EOF
 
 
+sudo nginx -t
 sudo systemctl reload nginx
