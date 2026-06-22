@@ -11,7 +11,6 @@ export const db = async () => {
     await mongoose.connect(process.env.MONGO_URL, {
       dbName: DB_NAME,
     });
-`);
   } catch (e) {
     throw new ApiError(500, `error in mongodb connection -> ${e.message}`);
   }

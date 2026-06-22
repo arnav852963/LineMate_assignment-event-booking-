@@ -55,12 +55,12 @@ app.use((err, req, res, next) => {
     errors: err.errors || [],
   });
 });
-app.use("/health" , (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Server is healthy"
-    })
-})
+app.use('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is healthy',
+  });
+});
 
 import authRoutes from './routes/auth.routes.js';
 app.use('/api/v1/auth', authRoutes);

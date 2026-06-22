@@ -16,8 +16,7 @@ db()
 
     const PORT = process.env.PORT || 8000;
 
-    httpserver.listen(PORT, () => {
-    });
+    httpserver.listen(PORT, () => {});
     app.on('error', (error) => {
       throw error;
     });

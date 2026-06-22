@@ -43,8 +43,7 @@ export const initializeSocketHandlers = (io) => {
           locks.push({ eventId, seatId, userId });
           socketLocks.set(socket.id, locks);
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     });
 
     socket.on('unlockSeat', async ({ eventId, seatId, userId }) => {
@@ -79,8 +78,7 @@ export const initializeSocketHandlers = (io) => {
           locks = locks.filter((l) => l.seatId !== seatId);
           socketLocks.set(socket.id, locks);
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     });
 
     socket.on('disconnect', async () => {
@@ -114,8 +112,7 @@ export const initializeSocketHandlers = (io) => {
           if (updatedEvent) {
             io.to(lock.eventId).emit('seatUnlocked', { seatId: lock.seatId });
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       }
       socketLocks.delete(socket.id);
     });

@@ -16,8 +16,7 @@ export const auditLogMiddleware = (req, res, next) => {
           payload: safePayload,
           ipAddress: req.ip || req.connection?.remoteAddress,
         });
-      } catch (error) {
-      }
+      } catch (error) {}
     });
   }
   next();
